@@ -1,0 +1,33 @@
+# Gen-POS .htaccess Configuration
+
+# Prevent directory listing
+Options -Indexes
+
+# Disable server signature for security
+ServerSignature Off
+
+# Allow access to PHP files in specific directories
+<FilesMatch "^(pages|scripts|setup)/.*\.php$">
+    Require all granted
+</FilesMatch>
+
+# Allow access to root index.php
+<FilesMatch "^(index\.php)$">
+    Require all granted
+</FilesMatch>
+
+# Allow access to assets (CSS, JS, images)
+<FilesMatch "^assets/.*\.(css|js|png|jpg|jpeg|gif|ico)$">
+    Require all granted
+</FilesMatch>
+
+# Deny access to the includes directory
+<FilesMatch "^includes/.*\.php$">
+    Require all denied
+</FilesMatch>
+
+# Rewrite rules for clean URLs
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
