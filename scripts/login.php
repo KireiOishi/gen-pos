@@ -1,3 +1,4 @@
+<!--   Description: This script handles user login by validating credentials and setting session variables.  -->
 <?php
 session_start();
 require_once '../includes/config.php';

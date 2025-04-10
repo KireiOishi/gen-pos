@@ -1,3 +1,5 @@
+<!-- Description: This script creates an admin user for the Gen-POS system.
+ It checks if an admin user already exists and if not, creates one with a default password. -->
 <?php
 require_once '../includes/config.php';
 
@@ -5,7 +7,7 @@ require_once '../includes/config.php';
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE role = 'admin'");
 $stmt->execute();
 $adminCount = $stmt->fetchColumn();
-
+// adjust $adminCount if need more admins
 if ($adminCount > 0) {
     die("An admin user already exists. This script cannot be run again.");
 }

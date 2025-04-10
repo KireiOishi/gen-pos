@@ -1,3 +1,4 @@
+// <!--   Description: This script displays the login form and handles user authentication.  -->
 <?php
 session_start();
 require_once '../includes/functions.php'; 
