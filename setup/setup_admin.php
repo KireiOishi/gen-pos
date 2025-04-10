@@ -7,7 +7,6 @@ require_once '../includes/config.php';
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE role = 'admin'");
 $stmt->execute();
 $adminCount = $stmt->fetchColumn();
-// adjust $adminCount if need more admins
 if ($adminCount > 0) {
     die("An admin user already exists. This script cannot be run again.");
 }

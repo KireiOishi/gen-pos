@@ -13,13 +13,15 @@ if (!isLoggedIn()) {
     <meta charset="UTF-8">
     <title>Gen-POS | Cashier POS</title>
     <link rel="stylesheet" href="../assets/css/styles.css">
+    <?php include '../includes/cashier_nav.php'; ?>
 </head>
 <body>
+ 
+
     <div class="container">
-        <h2>Gen-POS Cashier Interface</h2>
+        <h2>Cashier</h2>
         <?php include '../includes/notifications.php'; ?>
-        <p>Welcome, <?php echo getCurrentUserName(); ?>!</p>
-        <a href="logout.php" class="btn btn-primary">Logout</a>
+        <p>Welcome, <?php echo getCurrentUserName(); ?>
     </div>
 </body>
 </html>

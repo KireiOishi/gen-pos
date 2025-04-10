@@ -1,8 +1,5 @@
-// <!--   Description: This script displays the login form and handles user authentication.  -->
 <?php
-session_start();
-require_once '../includes/functions.php'; 
-require_once '../includes/config.php';
+require_once '../includes/init.php';
 
 if (isLoggedIn()) {
     header("Location: ../index.php");
@@ -17,7 +14,12 @@ if (isLoggedIn()) {
     <link rel="stylesheet" href="../assets/css/styles.css">
 </head>
 <body>
-    <div class="login-background">
+<nav class="login-nav">
+    <div class="nav-brand">
+        <a href="../index.php">Gen-POS</a>
+    </div>
+</nav>
+
     <div class="login-container">
         <div class="login-box">
             <h2>Gen-POS Login</h2>
@@ -35,5 +37,6 @@ if (isLoggedIn()) {
             </form>
         </div>
     </div>
+    <div class="login-background"></div>
 </body>
 </html>
