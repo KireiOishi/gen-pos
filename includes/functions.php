@@ -20,11 +20,12 @@ function validateLogin($pdo, $userId, $credential) {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
-        
-        if ($user && password_verify($credential, $user['credential'])) {
-            $_SESSION['user_id'] = $user['user_id'];
+
+        // If user exists and credential matches
+        if ($user && password_verify($credential, $user['credential'])) {   
+            $_SESSION['user_id'] = $user['id']; 
             $_SESSION['role'] = $user['role'];
-            $_SESSION['user_name'] = $user['name']; // For display purposes
+            $_SESSION['user_name'] = $user['name']; // Optional: for display
             return true;
         }
         return false;
@@ -33,6 +34,7 @@ function validateLogin($pdo, $userId, $credential) {
         return false;
     }
 }
+
 
 function isLoggedIn() {
     return isset($_SESSION['user_id']);

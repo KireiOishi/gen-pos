@@ -112,74 +112,79 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['id'])) 
 </head>
 <body>
     <?php include '../includes/admin_nav.php'; ?>
+    <div class="admin-background"></div>
 
     <div class="container">
         <h2>User Management</h2>
         <?php include '../includes/notifications.php'; ?>
 
         <!-- Create/Edit User Form -->
-        <h3><?php echo $editUser ? 'Edit User' : 'Create New User'; ?></h3>
-        <form method="POST">
-            <input type="hidden" name="action" value="<?php echo $editUser ? 'edit' : 'create'; ?>">
-            <?php if ($editUser): ?>
-                <input type="hidden" name="id" value="<?php echo $editUser['id']; ?>">
-            <?php endif; ?>
-            <div class="form-group">
-                <label for="user_id">User ID</label>
-                <input type="text" id="user_id" name="user_id" value="<?php echo $editUser ? $editUser['user_id'] : ''; ?>" <?php echo $editUser ? 'readonly' : 'required'; ?>>
-            </div>
-            <div class="form-group">
-                <label for="credential">PIN/Password <?php echo $editUser ? '(Leave blank to keep unchanged)' : ''; ?></label>
-                <input type="text" id="credential" name="credential" placeholder="Enter new PIN/Password" <?php echo !$editUser ? 'required' : ''; ?>>
-            </div>
-            <div class="form-group">
-                <label for="role">Role</label>
-                <select id="role" name="role" required>
-                    <option value="admin" <?php echo $editUser && $editUser['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                    <option value="cashier" <?php echo $editUser && $editUser['role'] === 'cashier' ? 'selected' : ''; ?>>Cashier</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" value="<?php echo $editUser ? $editUser['name'] : ''; ?>" required>
-            </div>
-            <button type="submit" class="btn btn-primary"><?php echo $editUser ? 'Update User' : 'Create User'; ?></button>
-            <?php if ($editUser): ?>
-                <a href="user_management.php" class="btn btn-primary">Cancel</a>
-            <?php endif; ?>
-        </form>
+        <div class="glass-box">
+            <h3><?php echo $editUser ? 'Edit User' : 'Create New User'; ?></h3>
+            <form method="POST">
+                <input type="hidden" name="action" value="<?php echo $editUser ? 'edit' : 'create'; ?>">
+                <?php if ($editUser): ?>
+                    <input type="hidden" name="id" value="<?php echo $editUser['id']; ?>">
+                <?php endif; ?>
+                <div class="form-group">
+                    <label for="user_id">User ID</label>
+                    <input type="text" id="user_id" name="user_id" value="<?php echo $editUser ? $editUser['user_id'] : ''; ?>" <?php echo $editUser ? 'readonly' : 'required'; ?>>
+                </div>
+                <div class="form-group">
+                    <label for="credential">PIN/Password <?php echo $editUser ? '(Leave blank to keep unchanged)' : ''; ?></label>
+                    <input type="text" id="credential" name="credential" placeholder="Enter new PIN/Password" <?php echo !$editUser ? 'required' : ''; ?>>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="admin" <?php echo $editUser && $editUser['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                        <option value="cashier" <?php echo $editUser && $editUser['role'] === 'cashier' ? 'selected' : ''; ?>>Cashier</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" value="<?php echo $editUser ? $editUser['name'] : ''; ?>" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><?php echo $editUser ? 'Update User' : 'Create User'; ?></button>
+                <?php if ($editUser): ?>
+                    <a href="user_management.php" class="btn btn-primary">Cancel</a>
+                <?php endif; ?>
+            </form>
+        </div>
 
         <!-- User List -->
-        <h3>All Users</h3>
-        <?php if (empty($users)): ?>
-            <p>No users found.</p>
-        <?php else: ?>
-            <table class="user-table">
-                <thead>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Name</th>
-                        <th>Role</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user): ?>
+        <div class="glass-box">
+            <h3>All Users</h3>
+            <?php if (empty($users)): ?>
+                <p>No users found.</p>
+            <?php else: ?>
+                <table class="user-table">
+                    <thead>
                         <tr>
-                            <td><?php echo htmlspecialchars($user['user_id']); ?></td>
-                            <td><?php echo htmlspecialchars($user['name']); ?></td>
-                            <td><?php echo htmlspecialchars($user['role']); ?></td>
-                            <td><?php echo htmlspecialchars($user['created_at']); ?></td>
-                            <td>
-                                <a href="user_management.php?action=edit&id=<?php echo $user['id']; ?>" class="btn btn-primary btn-small">Edit</a>
-                                <a href="user_management.php?action=delete&id=<?php echo $user['id']; ?>" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
-                            </td>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($users as $user): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($user['user_id']); ?></td>
+                                <td><?php echo htmlspecialchars($user['name']); ?></td>
+                                <td><?php echo htmlspecialchars($user['role']); ?></td>
+                                <td><?php echo htmlspecialchars($user['created_at']); ?></td>
+                                <td>
+                                    <a href="user_management.php?action=edit&id=<?php echo $user['id']; ?>" class="btn btn-primary btn-small">Edit</a>
+                                    <a href="user_management.php?action=delete&id=<?php echo $user['id']; ?>" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
     </div>
 </body>
 </html>

@@ -10,6 +10,16 @@ body {
     background-color: #f0f0f0;
     position: relative; 
 }
+/* Admin Background */
+.admin-background {
+    background: linear-gradient(135deg, #011b07, #025c29);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
 
 /* Container Styles */
 .container {
@@ -103,6 +113,9 @@ input::placeholder {
     cursor: pointer;
     font-size: 1rem;
     transition: all 0.3s ease;
+    display: inline-flex; /* Ensure buttons align properly */
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-primary {
@@ -113,9 +126,27 @@ input::placeholder {
 
 .btn-primary:hover {
     background: rgba(33, 136, 56, 0.9); /* Darker green */
-    transform: translateY(-2px); /* Slight lift */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.6); /* Enhanced shadow on hover */
 }
 
+.btn-danger {
+    background: rgba(220, 53, 69, 0.8); /* Red with transparency for glassmorphism */
+    color: white;
+    box-shadow: 0 2px 10px rgba(220, 53, 69, 0.4); /* Matching shadow */
+}
+
+.btn-danger:hover {
+    background: rgba(200, 35, 51, 0.9); /* Darker red on hover */
+    transform: translateY(-2px); /* Matching lift effect */
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.6); /* Enhanced shadow on hover */
+}
+
+/* Small Buttons for Actions */
+.btn-small {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+}
 /* Notification Styles */
 .notification {
     padding: 1rem;
@@ -285,4 +316,161 @@ nav {
 
 .login-nav .nav-brand a:hover {
     transform: scale(1.05);
+}
+
+/* Glassmorphism Box for Admin Pages */
+.glass-box {
+    background: rgba(248, 248, 248, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.glass-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 40px rgba(0, 0, 0, 0.25);
+}
+
+.glass-box h3 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Elements in Glass Box */
+.glass-box .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.glass-box input,
+.glass-box select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transition: border-color 0.3s ease;
+}
+
+.glass-box input:focus,
+.glass-box select:focus {
+    outline: none;
+    border-color: #4e5851;
+}
+
+.glass-box input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* User Table in Glass Box */
+.glass-box .user-table {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+}
+
+.glass-box .user-table th,
+.glass-box .user-table td {
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-box .user-table th {
+    background-color: rgba(40, 167, 69, 0.5);
+}
+
+.glass-box .user-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.glass-box p {
+    color: #fff;
+    text-align: center;
+}
+/* General User Table Styles */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0; /* Consistent margin with heading */
+}
+
+/* User Table in Glass Box */
+.glass-box .user-table {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    border-radius: 8px;
+    overflow: hidden; 
+}
+
+.glass-box .user-table th,
+.glass-box .user-table td {
+    padding: 1rem; 
+    color: #fff;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-box .user-table th {
+    background-color: rgba(40, 167, 69, 0.5);
+    font-weight: 600;
+    padding: 1rem; 
+}
+
+.glass-box .user-table td {
+    padding: 1rem; 
+}
+
+.glass-box .user-table tr:last-child td {
+    border-bottom: none; 
+}
+
+.glass-box .user-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.glass-box h3 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 1.5rem; /* Consistent spacing with table */
+    font-size: 1.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.glass-box .user-table td:last-child {
+    display: flex;
+    gap: 0.5rem; 
+    align-items: center;
+    justify-content: flex-start;
+}
+/* Barcode Image Styling */
+.barcode-img {
+    width: 150px;
+    height: 50px;
+    display: block;
+    margin: 0 auto 0.5rem auto; /* Center with margin below for the barcode text */
+}
+
+.form-group .barcode-img {
+    margin: 0.5rem 0;
+}
+/* Cashier Background */
+.cashier-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    z-index: -1;
 }

@@ -24,5 +24,6 @@ if (!isLoggedIn() || !isAdmin()) {
         <?php include '../includes/notifications.php'; ?>
         <p>Welcome, <?php echo getCurrentUserName(); ?>
     </div>
+    
 </body>
 </html>

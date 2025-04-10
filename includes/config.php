@@ -1,10 +1,15 @@
 <?php
 // Gen-POS On-Premise Database Configuration
+$host = 'localhost';
+$dbname = 'gen_pos_db';
+$dbuser = 'root';           // Default XAMPP username
+$dbpass = '';               // Default XAMPP password (empty)
+
 try {
     $pdo = new PDO(
-        "mysql:host=localhost;dbname=gen_pos_db",
-        "root",           // Default XAMPP username
-        "",               // Default XAMPP password (empty)
+        "mysql:host=$host;dbname=$dbname",
+        $dbuser,
+        $dbpass,
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
