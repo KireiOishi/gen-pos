@@ -1,6 +1,6 @@
 <?php
 require_once '../includes/init.php';
-
+date_default_timezone_set('Asia/Manila');
 if (!isLoggedIn()) {
     setNotification('error', 'Please log in to access the POS.');
     header("Location: login.php");
