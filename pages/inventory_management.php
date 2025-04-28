@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $barcode_data = generateProductBarcodeFromScanned($scanned_barcode);
                 $stmt->execute([$name, $price, $stock, $scanned_barcode, $barcode_data['barcode_path']]);
             } else {
+                $stmt = $pdo->prepare("INSERT INTO products (name, price, stock, barcode, barcode_path) VALUES (?, ?, ?, ?, ?)");
                 $stmt->execute([$name, $price, $stock, null, null]);
                 $product_id = $pdo->lastInsertId();
                 $barcode_data = generateProductBarcode($product_id);
@@ -255,7 +256,7 @@ function generateProductBarcodeFromScanned($barcode) {
                     <input type="text" id="name" name="name" value="<?php echo $editProduct ? htmlspecialchars($editProduct['name']) : ''; ?>" required>
                 </div>
                 <div class="form-group">
-                    <label for="price">Price ($)</label>
+                    <label for="price">Price (₱)</label>
                     <input type="number" id="price" name="price" step="0.01" value="<?php echo $editProduct ? htmlspecialchars($editProduct['price']) : ''; ?>" required>
                 </div>
                 <div class="form-group">
@@ -294,7 +295,7 @@ function generateProductBarcodeFromScanned($barcode) {
                         <tr>
                             <th>Product ID</th>
                             <th>Name</th>
-                            <th>Price ($)</th>
+                            <th>Price (₱)</th>
                             <th>Stock</th>
                             <th>Barcode</th>
                             <th>Created At</th>
@@ -306,7 +307,7 @@ function generateProductBarcodeFromScanned($barcode) {
                             <tr>
                                 <td><?php echo htmlspecialchars($product['id']); ?></td>
                                 <td><?php echo htmlspecialchars($product['name']); ?></td>
-                                <td><?php echo htmlspecialchars(number_format($product['price'], 2)); ?></td>
+                                <td>₱<?php echo htmlspecialchars(number_format($product['price'], 2)); ?></td>
                                 <td><?php echo htmlspecialchars($product['stock']); ?></td>
                                 <td>
                                     <?php if ($product['barcode_path']): ?>
@@ -333,7 +334,7 @@ function generateProductBarcodeFromScanned($barcode) {
             <h3>Inventory Report</h3>
             <p>Total Products: <?php echo count($products); ?></p>
             <p>Total Stock: <?php echo array_sum(array_column($products, 'stock')); ?></p>
-            <p>Total Value: $<?php echo number_format(array_sum(array_map(function($product) { return $product['price'] * $product['stock']; }, $products)), 2); ?></p>
+            <p>Total Value: ₱<?php echo number_format(array_sum(array_map(function($product) { return $product['price'] * $product['stock']; }, $products)), 2); ?></p>
         </div>
     </div>
 

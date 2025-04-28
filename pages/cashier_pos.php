@@ -14,7 +14,7 @@ if (!isset($_SESSION['cart'])) {
 
 // Fetch all products for the product selection
 $stmt = $pdo->query("SELECT * FROM products ORDER BY name ASC");
-$products = $stmt->fetchAll();
+$products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle Add to Cart via Product Selection
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_to_cart') {
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Fetch the product to check stock
     $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
     $stmt->execute([$product_id]);
-    $product = $stmt->fetch();
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$product) {
         setNotification('error', 'Product not found.');
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Fetch the product by barcode
     $stmt = $pdo->prepare("SELECT * FROM products WHERE barcode = ?");
     $stmt->execute([$barcode]);
-    $product = $stmt->fetch();
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$product) {
         setNotification('error', 'Invalid barcode or product not found.');
@@ -77,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 'quantity' => $quantity
             ];
         }
-        setNotification('success', 'Product added to cart via barcode!');
     }
     header("Location: cashier_pos.php");
     exit;
@@ -109,7 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     } elseif (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
         setNotification('error', 'User ID not found in session. Please log in again.');
     } else {
-
         $transactionStarted = false;
         try {
             $pdo->beginTransaction();
@@ -268,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <div class="container">
         <h2>Cashier POS Interface</h2>
         <?php include '../includes/notifications.php'; ?>
-        <p>Welcome, <?php echo getCurrentUserName(); ?> (User ID: <?php echo getCurrentUserId(); ?>)!</p>
+        <p>Welcome, <?php echo htmlspecialchars(getCurrentUserName()); ?> (User ID: <?php echo htmlspecialchars(getCurrentUserId()); ?>)!</p>
 
         <div class="pos-container">
             <!-- Product Selection Section -->
@@ -301,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <option value="">-- Select a Product --</option>
                                 <?php foreach ($products as $product): ?>
                                     <option value="<?php echo $product['id']; ?>">
-                                        <?php echo htmlspecialchars($product['name']) . ' ($' . number_format($product['price'], 2) . ') - Stock: ' . $product['stock']; ?>
+                                        <?php echo htmlspecialchars($product['name']) . ' (₱' . number_format($product['price'], 2) . ') - Stock: ' . $product['stock']; ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -326,9 +324,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                             <thead>
                                 <tr>
                                     <th>Product</th>
-                                    <th>Price ($)</th>
+                                    <th>Price (₱)</th>
                                     <th>Qty</th>
-                                    <th>Subtotal ($)</th>
+                                    <th>Subtotal (₱)</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -341,9 +339,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 ?>
                                     <tr data-product-id="<?php echo $product_id; ?>">
                                         <td><?php echo htmlspecialchars($item['name']); ?></td>
-                                        <td><?php echo htmlspecialchars(number_format($item['price'], 2)); ?></td>
+                                        <td>₱<?php echo htmlspecialchars(number_format($item['price'], 2)); ?></td>
                                         <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                                        <td class="subtotal"><?php echo htmlspecialchars(number_format($subtotal, 2)); ?></td>
+                                        <td class="subtotal">₱<?php echo htmlspecialchars(number_format($subtotal, 2)); ?></td>
                                         <td>
                                             <a href="cashier_pos.php?action=remove_from_cart&product_id=<?php echo $product_id; ?>" class="btn btn-danger btn-small"><i class="fas fa-trash"></i></a>
                                         </td>
@@ -351,7 +349,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <?php endforeach; ?>
                                 <tr class="total-row">
                                     <td colspan="3">Total</td>
-                                    <td id="cart-total"><?php echo htmlspecialchars(number_format($total, 2)); ?></td>
+                                    <td id="cart-total">₱<?php echo htmlspecialchars(number_format($total, 2)); ?></td>
                                     <td></td>
                                 </tr>
                             </tbody>
@@ -369,8 +367,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <div class="glass-box">
                     <h3><i class="fas fa-receipt"></i> Summary</h3>
                     <p><strong>Total Items:</strong> <?php echo count($_SESSION['cart']); ?></p>
-                    <p><strong>Total Amount:</strong> $<span id="summary-total"><?php echo number_format($total ?? 0, 2); ?></span></p>
-                    <p><strong>Cashier:</strong> <?php echo getCurrentUserName(); ?></p>
+                    <p><strong>Total Amount:</strong> ₱<span id="summary-total"><?php echo number_format($total ?? 0, 2); ?></span></p>
+                    <p><strong>Cashier:</strong> <?php echo htmlspecialchars(getCurrentUserName()); ?></p>
                     <p><strong>Date:</strong> <?php echo date('Y-m-d H:i:s'); ?></p>
                 </div>
             </div>
@@ -381,7 +379,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <div class="modal-content">
                 <h3>Confirm Checkout</h3>
                 <p>Are you sure you want to complete this transaction?</p>
-                <p><strong>Total Amount:</strong> $<span id="modal-total"><?php echo number_format($total ?? 0, 2); ?></span></p>
+                <p><strong>Total Amount:</strong> ₱<span id="modal-total"><?php echo number_format($total ?? 0, 2); ?></span></p>
                 <div class="modal-buttons">
                     <form method="POST" style="display: inline;">
                         <input type="hidden" name="action" value="checkout">
@@ -398,10 +396,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         function updateCartTotal() {
             let total = 0;
             document.querySelectorAll('#cart-items tr:not(.total-row)').forEach(row => {
-                const subtotal = parseFloat(row.querySelector('.subtotal').textContent.replace(',', ''));
+                const subtotalText = row.querySelector('.subtotal').textContent.replace('₱', '').replace(',', '');
+                const subtotal = parseFloat(subtotalText);
                 total += subtotal;
             });
-            document.getElementById('cart-total').textContent = total.toFixed(2);
+            document.getElementById('cart-total').textContent = '₱' + total.toFixed(2);
             document.getElementById('summary-total').textContent = total.toFixed(2);
             document.getElementById('modal-total').textContent = total.toFixed(2);
         }
@@ -426,4 +425,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         updateCartTotal();
     </script>
 </body>
-</html>z
+</html>
