@@ -12,30 +12,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $name = trim($_POST['name']);
     $price = floatval($_POST['price']);
     $stock = intval($_POST['stock']);
+    $scanned_barcode = isset($_POST['scanned_barcode']) ? trim($_POST['scanned_barcode']) : '';
 
+    // Validate inputs
     if (empty($name) || $price <= 0 || $stock < 0) {
         setNotification('error', 'All fields are required, and price must be greater than 0.');
     } else {
         try {
-            // Insert the product without barcode first to get the product ID
-            $stmt = $pdo->prepare("INSERT INTO products (name, price, stock) VALUES (?, ?, ?)");
-            $stmt->execute([$name, $price, $stock]);
-            $product_id = $pdo->lastInsertId();
+            // Validate scanned barcode if provided
+            if (!empty($scanned_barcode)) {
+                // Allow numeric barcodes (8-13 digits for EAN-13/UPC-A) or alphanumeric (for Code 128)
+                if (!preg_match('/^[0-9A-Za-z]{4,20}$/', $scanned_barcode)) {
+                    throw new Exception('Invalid barcode format. Must be 4-20 alphanumeric characters.');
+                }
+                // Check for duplicate barcode
+                $stmt = $pdo->prepare("SELECT id FROM products WHERE barcode = ?");
+                $stmt->execute([$scanned_barcode]);
+                if ($stmt->fetch()) {
+                    throw new Exception('Barcode already exists in the database.');
+                }
+            }
 
-            // Generate barcode for the product
-            $barcode_data = generateProductBarcode($product_id);
+            // Begin transaction
+            $pdo->beginTransaction();
 
-            // Update the product with the barcode data
-            $stmt = $pdo->prepare("UPDATE products SET barcode = ?, barcode_path = ? WHERE id = ?");
-            $stmt->execute([$barcode_data['barcode'], $barcode_data['barcode_path'], $product_id]);
+            // Insert product
+            $stmt = $pdo->prepare("INSERT INTO products (name, price, stock, barcode, barcode_path) VALUES (?, ?, ?, ?, ?)");
+            if (!empty($scanned_barcode)) {
+                // Use scanned barcode and generate its image
+                $barcode_data = generateProductBarcodeFromScanned($scanned_barcode);
+                $stmt->execute([$name, $price, $stock, $scanned_barcode, $barcode_data['barcode_path']]);
+            } else {
+                // Generate new barcode
+                $stmt->execute([$name, $price, $stock, null, null]);
+                $product_id = $pdo->lastInsertId();
+                $barcode_data = generateProductBarcode($product_id);
+                $stmt = $pdo->prepare("UPDATE products SET barcode = ?, barcode_path = ? WHERE id = ?");
+                $stmt->execute([$barcode_data['barcode'], $barcode_data['barcode_path'], $product_id]);
+            }
 
+            $pdo->commit();
             setNotification('success', 'Product added successfully!');
         } catch (Exception $e) {
+            $pdo->rollBack();
             setNotification('error', 'Error adding product: ' . $e->getMessage());
         }
     }
     header("Location: inventory_management.php");
     exit;
+}
+function generateProductBarcodeFromScanned($barcode) {
+    // Paths
+    $barcode_dir = '../assets/barcode/';
+    $barcode_file = $barcode_dir . $barcode . '.png';
+
+    if (!is_dir($barcode_dir)) {
+        mkdir($barcode_dir, 0777, true);
+    }
+
+    // Generate the barcode image (without text)
+    $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+    $barcode_data = $generator->getBarcode($barcode, $generator::TYPE_CODE_128, 3, 100);
+
+    // Create image from barcode binary
+    $barcode_image = imagecreatefromstring($barcode_data);
+    $barcode_width = imagesx($barcode_image);
+    $barcode_height = imagesy($barcode_image);
+
+    // Create new image with extra space below for text
+    $text_height = 20;
+    $total_height = $barcode_height + $text_height;
+
+    $final_image = imagecreatetruecolor($barcode_width, $total_height);
+
+    // Colors
+    $white = imagecolorallocate($final_image, 255, 255, 255);
+    $black = imagecolorallocate($final_image, 0, 0, 0);
+    imagefill($final_image, 0, 0, $white);
+
+    // Copy barcode onto final image
+    imagecopy($final_image, $barcode_image, 0, 0, 0, 0, $barcode_width, $barcode_height);
+
+    // Add the barcode text
+    $font = __DIR__ . '/arial.ttf'; // Same font as generateProductBarcode
+    if (file_exists($font)) {
+        imagettftext($final_image, 12, 0, 10, $total_height - 5, $black, $font, $barcode);
+    } else {
+        // Fallback to built-in font
+        imagestring($final_image, 4, 10, $barcode_height + 2, $barcode, $black);
+    }
+
+    // Save final image
+    imagepng($final_image, $barcode_file);
+    imagedestroy($barcode_image);
+    imagedestroy($final_image);
+
+    return [
+        'barcode' => $barcode,
+        'barcode_path' => 'assets/barcode/' . $barcode . '.png'
+    ];
 }
 
 // Handle Edit Product
@@ -178,44 +253,30 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['id'])) 
 
         <!-- Add/Edit Product Form -->
         <div class="glass-box">
-            <h3><?php echo $editProduct ? 'Edit Product' : 'Add New Product'; ?></h3>
-            <form method="POST">
-                <input type="hidden" name="action" value="<?php echo $editProduct ? 'edit' : 'add'; ?>">
-                <?php if ($editProduct): ?>
-                    <input type="hidden" name="id" value="<?php echo $editProduct['id']; ?>">
-                <?php endif; ?>
+            <h3>Add New Product</h3>
+            <form method="POST" id="addProductForm">
+                <input type="hidden" name="action" value="add">
                 <div class="form-group">
                     <label for="name">Product Name</label>
-                    <input type="text" id="name" name="name" value="<?php echo $editProduct ? htmlspecialchars($editProduct['name']) : ''; ?>" required>
+                    <input type="text" id="name" name="name" required>
                 </div>
                 <div class="form-group">
                     <label for="price">Price ($)</label>
-                    <input type="number" id="price" name="price" step="0.01" value="<?php echo $editProduct ? htmlspecialchars($editProduct['price']) : ''; ?>" required>
+                    <input type="number" id="price" name="price" step="0.01" required>
                 </div>
                 <div class="form-group">
                     <label for="stock">Stock Quantity</label>
-                    <input type="number" id="stock" name="stock" value="<?php echo $editProduct ? htmlspecialchars($editProduct['stock']) : ''; ?>" required>
+                    <input type="number" id="stock" name="stock" required>
                 </div>
-                <?php if ($editProduct): ?>
-                    <div class="form-group">
-                        <label for="regenerate_barcode">Regenerate Barcode?</label>
-                        <input type="checkbox" id="regenerate_barcode" name="regenerate_barcode" value="1">
-                    </div>
-                    <?php if ($editProduct['barcode_path']): ?>
-                        <div class="form-group">
-                            <label>Current Barcode</label>
-                            <img src="../<?php echo htmlspecialchars($editProduct['barcode_path']); ?>" alt="Barcode" class="barcode-img">
-                            <p><?php echo htmlspecialchars($editProduct['barcode']); ?></p>
-                        </div>
-                    <?php endif; ?>
-                <?php endif; ?>
-                <button type="submit" class="btn btn-primary"><?php echo $editProduct ? 'Update Product' : 'Add Product'; ?></button>
-                <?php if ($editProduct): ?>
-                    <a href="inventory_management.php" class="btn btn-primary">Cancel</a>
-                <?php endif; ?>
+                <div class="form-group">
+                    <label for="scanned_barcode">Barcode (Scan or Leave Blank)</label>
+                    <input type="text" id="scanned_barcode" name="scanned_barcode" placeholder="Scan barcode here">
+                    <button type="button" onclick="document.getElementById('scanned_barcode').value = ''" class="btn btn-secondary">Clear Barcode</button>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Product</button>
             </form>
         </div>
-
+        
         <!-- Product List -->
         <div class="glass-box">
             <h3>All Products</h3>
